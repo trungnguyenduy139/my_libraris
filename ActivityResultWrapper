@@ -1,0 +1,31 @@
+class ActivityResultWrapper<I, R> private constructor(
+    caller: ActivityResultCaller,
+    contract: ActivityResultContract<I, R>,
+    private var onActivityResult: OnActivityResult<R>?
+) {
+
+    private val launcher: ActivityResultLauncher<I> =
+        caller.registerForActivityResult(contract) { result: R -> callOnActivityResult(result) }
+
+    fun launch(input: I, onActivityResult: OnActivityResult<R>?) {
+        if (onActivityResult != null) {
+            this.onActivityResult = onActivityResult
+        } else {
+            IllegalStateException("Must implement onActivityResult").throwOnDebug()
+        }
+        launcher.launch(input)
+    }
+
+    private fun callOnActivityResult(result: R) {
+        this.onActivityResult?.onActivityResult(result)
+    }
+
+    companion object {
+        fun registerActivityForResult(caller: ActivityResultCaller): ActivityResultWrapper<Intent, ActivityResult> =
+            ActivityResultWrapper(caller, StartActivityForResult(), null)
+    }
+
+    interface OnActivityResult<P> {
+        fun onActivityResult(result: P)
+    }
+}
