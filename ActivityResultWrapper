@@ -36,3 +36,23 @@ class ActivityResultWrapper<I, R> private constructor(
         fun onActivityResult(result: P)
     }
 }
+
+// Usage
+// Init globally on fragment
+
+val activityResultWrapper: ActivityResultWrapper<Intent, ActivityResult> =
+        ActivityResultWrapper.registerActivityForResult(this)
+
+
+// Call inside navigator 
+
+activityResultWrapper.launch(
+        intent,
+        object : ActivityResultWrapper.OnActivityResult<ActivityResult> {
+            override fun onActivityResult(result: ActivityResult) {
+                if (result.resultCode == Activity.RESULT_OK) {
+                    callbackAction(result.data)
+                }
+            }
+        }
+    )
